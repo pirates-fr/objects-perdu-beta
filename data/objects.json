@@ -54,14 +54,5 @@
     "location": "Paris",
     "imageUrl": "../public/uploads/1739811206134-RMP0110078(46)_Pouchard Sebastien - Region Occitanie__original.jpg",
     "username": "Pirates"
-  },
-  {
-    "name": "test_iuhdfi",
-    "description": "çzehgçh",
-    "date": "0005-05-05",
-    "location": "dfb",
-    "imageUrl": "../public/uploads/1739912943355-11 RMP0084870_Darnaud-Antoine---Region-Occitanie_original.jpg",
-    "username": "dfb",
-    "status": "pending"
   }
 ]
