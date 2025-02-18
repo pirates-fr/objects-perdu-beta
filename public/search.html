@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche avancée</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+            margin: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #f1f1f1;
+            margin-top: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            padding: 15px;
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar img {
+            width: 80%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-filters {
+            background-color: #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-filters label {
+            color: white;
+            margin-right: 10px;
+        }
+
+        .search-filters select,
+        .search-filters input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 6px;
+            border: none;
+            background-color: #555;
+            color: white;
+        }
+
+        .object-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .object-item {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .object-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .object-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .view-button:hover {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(255, 65, 108, 0.5);
+        }
+
+        #search-box {
+            background-color: #444;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        #search-box input {
+            background: none;
+            border: none;
+            color: white;
+            padding: 5px;
+            outline: none;
+        }
+
+        #search-box button {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #search-box button:hover {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar left">
+            <a href="https://www.2c2e.fr" target="_blank"><img src="./images/pub1.jpg" alt=""></a>
+            <a href="https://www.2c2e.fr" target="_blank"><img src="./images/pub2.jpg" alt=""></a>
+        </aside>
+
+        <main>
+            <h2>Recherche avancée</h2>  
+
+            <div class="search-filters">
+                <label for="date-filter">Date:</label>
+                <input type="date" id="date-filter" onchange="filterObjects()">
+            </div>
+
+            <div class="object-list" id="object-list"></div>
+        </main>
+
+        <aside class="sidebar right">
+            <a href="https://www.exemple.com" target="_blank"><img src="./images/pub3.jpg" alt=""></a>
+            <a href="https://www.exemple.com" target="_blank"><img src="./images/pub4.jpg" alt=""></a>
+        </aside>
+    </div>
+
+    <script>
+        let allObjects = [];
+
+        async function loadObjects() {
+            const objectListContainer = document.getElementById("object-list");
+            objectListContainer.innerHTML = "<p>Chargement...</p>";
+
+            await new Promise(resolve => setTimeout(resolve, 750));
+
+            try {
+                const response = await fetch("http://localhost:3000/get-objects");
+                if (!response.ok) throw new Error("Erreur lors du chargement.");
+
+                allObjects = await response.json();
+                displayObjects(allObjects);
+            } catch (error) {
+                console.error("Erreur:", error);
+                objectListContainer.innerHTML = "<p>Impossible de charger les objets.</p>";
+            }
+        }
+
+        function displayObjects(objects) {
+            const objectListContainer = document.getElementById("object-list");
+            objectListContainer.innerHTML = "";
+
+            if (objects.length === 0) {
+                objectListContainer.innerHTML = "<p>Aucun objet trouvé.</p>";
+                return;
+            }
+
+            objects.forEach(obj => {
+                const objectItem = document.createElement("div");
+                objectItem.className = "object-item";
+
+                const img = document.createElement("img");
+                img.src = obj.imageUrl;
+                img.alt = obj.name;
+
+                const title = document.createElement("h3");
+                title.textContent = obj.name.replace(/_/g, " ");
+
+                const description = document.createElement("p");
+                description.textContent = obj.description;
+
+                const viewButton = document.createElement("button");
+                viewButton.className = "view-button";
+                viewButton.textContent = "Voir";
+                viewButton.onclick = () => {
+                    window.location.href = `../views/${obj.name}.html`;
+                };
+
+                objectItem.append(img, title, description, viewButton);
+
+                objectListContainer.appendChild(objectItem);
+            });
+        }
+
+        function applySearch() {
+            const searchTerm = document.getElementById("search-input").value.toLowerCase();
+            const filteredObjects = allObjects.filter(obj => obj.name.toLowerCase().includes(searchTerm));
+            displayObjects(filteredObjects);
+        }
+
+        function filterObjects() {
+            const dateFilter = document.getElementById("date-filter").value;
+
+            const filteredObjects = allObjects.filter(obj => {
+                const matchesDate = dateFilter ? obj.date === dateFilter : true;
+                return matchesDate;
+            });
+
+            displayObjects(filteredObjects);
+        }
+
+        window.onload = loadObjects;
+    </script>
+
+</body>
+</html>

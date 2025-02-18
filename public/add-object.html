@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajout d'un objet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #292929;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            text-align: left;
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #333;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border: 1px solid #777;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        button {
+            padding: 12px;
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #ff4b2b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ajouter un objet trouvé</h1>
+        <form id="add-object-form" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Nom de l'objet" required>
+            <input type="text" name="description" placeholder="Description" required>
+            <input type="date" name="date" required>
+            <input type="text" name="location" placeholder="Lieu trouvé" required>
+            <input type="text" name="username" placeholder="Votre nom" required>
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Ajouter</button>
+        </form>
+        <p id="message" class="message"></p>
+    </div>
+
+    <script>
+        document.getElementById("add-object-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+    
+            const formData = new FormData(event.target);
+            const messageElement = document.getElementById("message");
+    
+            let name = formData.get("name").trim().replace(/\s+/g, "_");
+            formData.set("name", name);
+    
+            try {
+                const response = await fetch("http://localhost:3000/add-object", {
+                    method: "POST",
+                    body: formData
+                });
+    
+                const result = await response.json();
+    
+                if (response.ok) {
+                    messageElement.textContent = "Objet ajouté avec succès !";
+                    messageElement.className = "message success";
+    
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2000);
+                } else {
+                    messageElement.textContent = result.error || "Une erreur est survenue.";
+                    messageElement.className = "message error";
+                }
+            } catch (error) {
+                messageElement.textContent = "Erreur lors de l'envoi.";
+                messageElement.className = "message error";
+                console.error("Erreur lors de l'envoi:", error);
+            }
+        });
+    </script>    
+
+</body>
+</html>
